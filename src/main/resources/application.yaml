@@ -1,0 +1,9 @@
+spring:
+  config:
+    import: optional:file:./env/default.env[.properties]
+  application:
+   name: ${APP_NAME}
+  profiles:
+    active: ${PROFILE_ACTIVE}
+
+
