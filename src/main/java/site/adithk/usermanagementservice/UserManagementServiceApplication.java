@@ -12,4 +12,5 @@ public class UserManagementServiceApplication {
 		SpringApplication.run(UserManagementServiceApplication.class, args);
 	}
 
+
 }

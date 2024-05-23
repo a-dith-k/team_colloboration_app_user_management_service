@@ -1,15 +1,19 @@
 spring:
-  config:
-    import: optional:file:./env/dev.env[.properties]
+  #config server configuration
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8888
 
-#Database configuration
+  #Database configuration
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+        storage_engine: InnoDB
   datasource:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -18,14 +22,7 @@ spring:
     name: ${DB_NAME}
 
 
+
 server:
   port: ${SERVER.PORT}
-
-#Eureka server configuration
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    register-with-eureka: true
-    fetch-registry: true
 

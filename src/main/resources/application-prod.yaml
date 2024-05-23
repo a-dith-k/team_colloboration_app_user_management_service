@@ -1,7 +1,9 @@
 spring:
-  config:
-    import: optional:file:./env/prod.env[.properties]
-
+  #config server configuration
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8888
   #Database configuration
   jpa:
     hibernate:
@@ -21,13 +23,6 @@ spring:
 server:
   port: ${SERVER.PORT}
 
-#Eureka server configuration
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    register-with-eureka: true
-    fetch-registry: true
 
 
 

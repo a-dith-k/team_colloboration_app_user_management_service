@@ -1,62 +1,60 @@
-package site.adithk.usermanagementservice.services;
+package site.adithk.usermanagementservice.services.user;
 
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import site.adithk.usermanagementservice.dtos.*;
 import site.adithk.usermanagementservice.entities.UserEntity;
-import site.adithk.usermanagementservice.exceptions.UserAlreadyExistsException;
-import site.adithk.usermanagementservice.exceptions.UserNotFoundException;
-import site.adithk.usermanagementservice.helper.LinkGenerator;
+import site.adithk.usermanagementservice.entities.UserVerificationData;
+import site.adithk.usermanagementservice.enums.UserRole;
+import site.adithk.usermanagementservice.exceptions.*;
 import site.adithk.usermanagementservice.mappers.UserEntityMapper;
 import site.adithk.usermanagementservice.repositories.UserRepository;
 
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserServiceImpl implements site.adithk.usermanagementservice.services.UserService {
+@Slf4j
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final EmailSenderService emailSenderService;
-    private final EmailService emailService;
-
-    private final String domainUrl;
 
     public UserServiceImpl(UserRepository userRepository,
-                           ModelMapper modelMapper, EmailSenderService emailSenderService, EmailService emailService, @Value("${app.frontend.domain.name}") String domainUrl) {
+                           ModelMapper modelMapper) {
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
-        this.emailSenderService = emailSenderService;
-        this.emailService = emailService;
-        this.domainUrl = domainUrl;
+
     }
 
     @Override
     public UserRegistrationResponse registerUser(UserRegistrationRequest registrationRequest)
             throws UserAlreadyExistsException {
         // checking for duplicate registration
-        if (userRepository.findUserEntityByEmail(registrationRequest.email()).isPresent())
+        if (userRepository.findUserEntityByEmail(registrationRequest.email()).isPresent()){
             throw new UserAlreadyExistsException("User with given email already exists");
+        }
 
+        // building verification details
+        UserVerificationData verificationData= UserVerificationData
+                .builder()
+                .isVerified(false)
+                .verificationLink(registrationRequest.verificationLink())
+                .generationTime(LocalDateTime.now())
+                .build();
 
-        // saving user to the database
+        UserEntity user=UserEntityMapper.map(registrationRequest);
+        user.setIsBlocked(true);
+        user.setUserRole(UserRole.APP_USER);
+        user.setVerificationData(verificationData);
+
         UserEntity savedUser = userRepository
-                .save(UserEntityMapper.map(registrationRequest));
-            
-        // sending email for confirmation
-        String verificationLink=LinkGenerator.getVerificationLink();
-        emailSenderService.sendSimpleEmail(registrationRequest.email(), "One App Verfication Link",
-                domainUrl.concat(verificationLink));
-        // saving verification details
-        emailService
-            .saveVerificationDetails(
-                VerificationDataRequestDto.builder()
-                .email(registrationRequest.email())
-                .verificationLink(verificationLink)
-                .build()
-                );
+                .save(user);
+
         return modelMapper
                 .map(savedUser, UserRegistrationResponse.class);
     }
@@ -68,14 +66,6 @@ public class UserServiceImpl implements site.adithk.usermanagementservice.servic
         return modelMapper.map(user, UserDataResponse.class);
     }
 
-    @Override
-    public void unBlockUser(String email) throws UserNotFoundException {
-        UserEntity user
-                =userRepository.findUserEntityByEmail(email).orElseThrow(()->new UserNotFoundException("user not found"));
-
-        user.setIsBlocked(false);
-        userRepository.save(user);
-    }
 
     @Override
     public List<UserDataResponse> getAllUsers() {
@@ -115,11 +105,56 @@ public class UserServiceImpl implements site.adithk.usermanagementservice.servic
         userRepository.delete(user);
     }
 
+
+
+
+    @Override
+    public UserDataResponse getUserDataByVerificationLink(String verificationString) throws InvalidLinkException {
+        UserEntity user=userRepository.findUserEntityByVerificationDataVerificationLink(verificationString)
+                .orElseThrow(() -> new InvalidLinkException("invalid verification link"));
+        log.info("User Data from Db:{}",user);
+        return modelMapper.map(user,UserDataResponse.class);
+    }
+
+    @Override
+    public void updateUserByFields(String email, Boolean isVerified) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+        user.setIsBlocked(false);
+        user.getVerificationData().setIsVerified(isVerified);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updateUserByFields(String email, Boolean isVerified, String firstName) {
+
+    }
+
+    @Override
+    public void updateUserByFields(String email, UserVerificationDataUpdateRequest request) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+
+        UserVerificationData verificationData=modelMapper.map(request,UserVerificationData.class);
+        user.setVerificationData(verificationData);
+
+        userRepository.save(user);
+    }
+
+
+    @Override
+    public boolean isVerified(String email) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+        return user.getVerificationData().getIsVerified();
+    }
+
     private UserEntity findUserByEmail(String email) throws UserNotFoundException {
         return
                 userRepository
                         .findUserEntityByEmail(email)
                         .orElseThrow(()->new UserNotFoundException("User Not Found"));
     }
+
+
+
+
 
 }

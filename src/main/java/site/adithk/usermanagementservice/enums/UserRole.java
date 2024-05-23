@@ -1,2 +1,6 @@
-package site.adithk.usermanagementservice.enums;public enum UserRole {
+package site.adithk.usermanagementservice.enums;
+
+public enum UserRole {
+    APP_USER,APP_ADMIN;
 }
+

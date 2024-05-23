@@ -1,10 +1,11 @@
 package site.adithk.usermanagementservice.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import site.adithk.usermanagementservice.enums.UserRole;
+
+import java.util.Date;
 
 @Entity
 @Data
@@ -41,4 +42,17 @@ public class UserEntity {
     private String firstName;
     @Column(nullable = false)
     private String lastName;
+    private Boolean isBlocked=true;
+    private UserRole userRole=UserRole.APP_USER;
+    private String profileImageUrl;
+    private Date joinDate;
+    private String jobTitle;
+    private String aboutMe;
+    private String department;
+    private Integer teamId;
+    private Boolean isOnline;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private UserVerificationData verificationData;
+
 }

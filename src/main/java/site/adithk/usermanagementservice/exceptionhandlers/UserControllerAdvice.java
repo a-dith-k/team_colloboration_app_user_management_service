@@ -1,19 +1,21 @@
-package site.adithk.usermanagementservice.controlleradvice;
+package site.adithk.usermanagementservice.exceptionhandlers;
 
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import site.adithk.usermanagementservice.dtos.VerificationResponse;
 import site.adithk.usermanagementservice.exceptions.*;
 
 @RestControllerAdvice
+@Slf4j
 public class UserControllerAdvice {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<String> userAlreadyExists(UserAlreadyExistsException ex) {
-
+        log.info("User Already Exist Exception:{}",ex.getMessage());
         return new ResponseEntity<>("User AlreadyExists", HttpStatus.CONFLICT);
     }
 
@@ -62,9 +64,9 @@ public class UserControllerAdvice {
                 HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> genericError(Exception ex) {
-
-        return new ResponseEntity<>("genericError",HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<String> genericError(Exception ex) {
+//        System.out.println("not able to catch");
+//        return new ResponseEntity<>(ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }
