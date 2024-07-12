@@ -78,9 +78,25 @@ public class UserController {
     }
 
     @PutMapping("update-by-fields")
-    public ResponseEntity<Void> updateUserPartially(@RequestParam("email") String email, @RequestParam("is-verified")Boolean isVerified) throws UserNotFoundException {
-
-        userService.updateUserByFields(email,isVerified);
+    public ResponseEntity<Void> updateUserPartially(
+            @RequestParam("email") String email,
+            @RequestParam(value = "is-verified" ,required = false)Boolean isVerified,
+            @RequestParam(value = "firstName" ,required = false)String firstName,
+            @RequestParam(value = "lastName" ,required = false)String lastName,
+            @RequestParam(value = "jobTitle" ,required = false)String jobTitle,
+            @RequestParam(value = "department" ,required = false)String department,
+            @RequestParam(value = "aboutMe" ,required = false)String aboutMe
+    ) throws UserNotFoundException {
+        if(isVerified!=null)
+            userService.updateUserByFields(email,isVerified);
+        if(firstName!=null && lastName !=null)
+            userService.updateUserFullName(email,firstName,lastName);
+        if(aboutMe!=null)
+            userService.updateAboutMe(email,aboutMe);
+        if(jobTitle!=null)
+            userService.updateJobTitle(email,jobTitle);
+        if(department!=null)
+            userService.updateUserDepartment(email,department);
         return ResponseEntity.ok().build();
     }
 
@@ -90,6 +106,8 @@ public class UserController {
         userService.updateUserByFields(email,request);
         return ResponseEntity.ok().build();
     }
+
+
 
 
 

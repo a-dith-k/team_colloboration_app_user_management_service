@@ -139,6 +139,36 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public void updateUserFullName(String email, String firstName, String lastName) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updateAboutMe(String email, String aboutMe) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+        user.setAboutMe(aboutMe);
+        userRepository.save(user);
+
+    }
+
+    @Override
+    public void updateJobTitle(String email, String jobTitle) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+        user.setJobTitle(jobTitle);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updateUserDepartment(String email, String department) throws UserNotFoundException {
+        UserEntity user=findUserByEmail(email);
+        user.setDepartment(department);
+        userRepository.save(user);
+    }
+
 
     @Override
     public boolean isVerified(String email) throws UserNotFoundException {
@@ -152,9 +182,6 @@ public class UserServiceImpl implements UserService {
                         .findUserEntityByEmail(email)
                         .orElseThrow(()->new UserNotFoundException("User Not Found"));
     }
-
-
-
 
 
 }

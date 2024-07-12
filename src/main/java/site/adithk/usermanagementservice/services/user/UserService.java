@@ -33,4 +33,13 @@ public interface UserService {
     void updateUserByFields(String email, Boolean isVerified,String firstName);
 
     void updateUserByFields(String email, UserVerificationDataUpdateRequest request) throws UserNotFoundException;
+
+    void updateUserFullName(String email, String firstName, String lastName) throws UserNotFoundException;
+
+
+    void updateAboutMe(String email, String aboutMe) throws UserNotFoundException;
+
+    void updateJobTitle(String email, String jobTitle) throws UserNotFoundException;
+
+    void updateUserDepartment(String email, String department) throws UserNotFoundException;
 }
